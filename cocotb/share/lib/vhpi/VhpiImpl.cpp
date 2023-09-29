@@ -536,7 +536,7 @@ GpiObjHdl *VhpiImpl::native_check_create(const std::string &name,
                     selected_name = selected_name.substr(found + 1);
                 }
 
-                if (selected_name == name) {
+                if (compare_names(selected_name, name)) {
                     vhpi_release_handle(iter);
                     break;
                 }
@@ -551,7 +551,13 @@ GpiObjHdl *VhpiImpl::native_check_create(const std::string &name,
             for (rgn = vhpi_scan(iter); rgn != NULL; rgn = vhpi_scan(iter)) {
                 if (vhpi_get(vhpiKindP, rgn) == vhpiForGenerateK) {
                     std::string rgn_name = vhpi_get_str(vhpiCaseNameP, rgn);
-                    if (rgn_name.compare(0, name.length(), name) == 0) {
+                    std::size_t found = rgn_name.find_first_of("(");
+
+                    if (found != std::string::npos) {
+                        rgn_name = rgn_name.substr(0, found);
+                    }
+
+                    if (compare_names(rgn_name, name)) {
                         new_hdl = vhpi_hdl;
                         vhpi_release_handle(iter);
                         break;
@@ -906,7 +912,7 @@ GpiObjHdl *VhpiImpl::get_root_handle(const char *name) {
         return NULL;
     }
 
-    if (name != NULL && strcmp(name, found)) {
+    if (name != NULL && !compare_names(name, found)) {
         LOG_WARN("VHPI: DUT '%s' doesn't match requested toplevel %s", found,
                  name);
         return NULL;
@@ -985,6 +991,19 @@ void VhpiImpl::sim_end() {
         vhpi_control(vhpiFinish, vhpiDiagTimeLoc);
         check_vhpi_error();
     }
+}
+
+bool VhpiImpl::compare_names(const std::string &a, const std::string &b) {
+#ifdef NVC
+    /* NVC does not properly implement the CaseName property and returns
+       Names instead (nickg/nvc#723). */
+    return a.size() == b.size() &&
+           equal(a.begin(), a.end(), b.begin(), [](char x, char y) {
+               return std::toupper(x) == std::toupper(y);
+           });
+#else
+    return a == b;
+#endif
 }
 
 extern "C" {
