@@ -25,7 +25,7 @@ on:
       group:
         required: false
         type: string
-        default: "ci"
+        default: "nick-test"
         description: Group of environments to run the tests against. Leave empty to run them all.
 
 jobs:
@@ -145,6 +145,21 @@ jobs:
         git clone https://github.com/ghdl/ghdl.git
         cd ghdl
         git reset --hard ${{matrix.sim-version}}
+        mkdir build
+        cd build
+        ../configure
+        make -j $(nproc)
+        sudo make install
+
+      # Install NVC
+    - name: Set up NVC (Ubuntu)
+      if: startsWith(matrix.os, 'ubuntu') && matrix.sim == 'nvc'
+      run: |
+        sudo apt install -y --no-install-recommends llvm-dev libdw-dev flex
+        git clone https://github.com/nickg/nvc.git
+        cd nvc
+        git reset --hard ${{matrix.sim-version}}
+        ./autogen.sh
         mkdir build
         cd build
         ../configure

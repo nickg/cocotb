@@ -23,4 +23,4 @@ jobs:
       nox_session_test_sim: dev_test_sim
       nox_session_test_nosim: dev_test_nosim
       collect_coverage: true
-      group: ci
+      group: nick-test

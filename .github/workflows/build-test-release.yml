@@ -8,7 +8,6 @@ on:
   # Run this workflow on every push to master or to a stable branch.
   push:
     branches:
-      - master
       - "stable/**"
     tags:
       - 'v*'

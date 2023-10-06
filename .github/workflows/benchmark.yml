@@ -4,10 +4,7 @@ name: Performance Benchmark
 on:
   push:
     branches:
-    - master
-  pull_request:
-    branches:
-      - master
+    - masterXXX
 
 permissions:
   # deployments permission to deploy GitHub pages website
